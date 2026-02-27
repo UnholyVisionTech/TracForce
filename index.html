@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TracForce CRM v2.2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { width: 100%; height: 100%; overflow: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    #loading { display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 18px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div id="root"><div id="loading">Loading TracForce CRM...</div></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+  <script>
+    var modules = ['./data.jsx', './engagement.jsx', './core.jsx', './views.jsx', './sections.jsx'];
+    Promise.all(modules.map(function(url) {
+      return fetch(url).then(function(res) {
+        if (!res.ok) throw new Error('Failed to load ' + url + ': ' + res.status);
+        return res.text();
+      });
+    }))
+    .then(function(sources) {
+      var jsxCode = sources.join('\n');
+      jsxCode += '\nvar root = ReactDOM.createRoot(document.getElementById("root"));\nroot.render(React.createElement(TracForce));';
+      var output = Babel.transform(jsxCode, { presets: ['react'] });
+      var script = document.createElement('script');
+      script.textContent = output.code;
+      document.body.appendChild(script);
+    })
+    .catch(function(err) {
+      console.error('TracForce load error:', err);
+      document.getElementById('root').innerHTML =
+        '<div style="padding:40px;color:#ef4444;font-size:16px;">' +
+        '<h2>Failed to load TracForce</h2>' +
+        '<p style="margin-top:10px;color:#64748b;">' + err.message + '</p></div>';
+    });
+  </script>
+</body>
+</html>
